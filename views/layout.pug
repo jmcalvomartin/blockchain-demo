@@ -81,12 +81,14 @@ html
                     a(href='/mempool') Mempool &amp; Fees
               li(class={active: page === 'theory'})
                 a(href='/theory') Theory
-              li.dropdown(class={active: page === 'keys' || page === 'signatures' || page === 'transaction' || page === 'signedblock' || page === 'utxo'})
+              li.dropdown(class={active: page === 'elliptic' || page === 'keys' || page === 'signatures' || page === 'transaction' || page === 'signedblock' || page === 'utxo'})
                 a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false')
                   | Keys
                   span.caret
                 ul.dropdown-menu.dropdown-menu-right
                   li.dropdown-header Public / Private Key Cryptography
+                  li(class={active: page === 'elliptic'})
+                    a(href='/elliptic') Elliptic Curves
                   li(class={active: page === 'keys'})
                     a(href='/keys') Key Pairs
                   li(class={active: page === 'signatures'})

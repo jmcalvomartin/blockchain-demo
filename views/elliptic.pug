@@ -1,0 +1,815 @@
+extends layout
+
+block content
+  .container
+    .ec-hero
+      .ec-hero-copy
+        .ec-eyebrow Cryptography Foundations
+        h1 Elliptic Curves for Blockchain
+        p.ec-hero-subtitle
+          | In blockchains, private keys, public keys and digital signatures depend on elliptic-curve arithmetic.
+          | This lab starts with the geometric idea, then moves to finite fields, and finally connects that same structure
+          | to the
+          code  secp256k1
+          |  keys used in the rest of the demo.
+      .ec-hero-side
+        .ec-note
+          strong Teaching arc
+          p
+            | Real curve intuition -> modular arithmetic -> blockchain key derivation.
+          p
+            | That progression keeps the simplification visible first and the cryptographic reality explicit afterwards.
+
+    .ec-steps
+      .ec-step
+        span 1
+        strong See point addition
+        p A line cuts the curve in a third point, and reflection gives the sum.
+      .ec-step
+        span 2
+        strong Move to Fp
+        p Replace the continuous curve with arithmetic modulo a prime.
+      .ec-step
+        span 3
+        strong Repeat points
+        p Scalar multiplication means adding the same point again and again.
+      .ec-step
+        span 4
+        strong Connect to keys
+        p Public key = private key × generator point on secp256k1.
+
+    .well.ec-panel
+      h3.ec-panel-title Why This Matters in Blockchain
+      .row
+        .col-sm-4
+          .ec-fact-card
+            h4 Key generation
+            p A wallet picks a private scalar and multiplies the generator point to obtain a public key.
+        .col-sm-4
+          .ec-fact-card
+            h4 Signatures
+            p ECDSA relies on elliptic-curve arithmetic to prove authorization without revealing the secret key.
+        .col-sm-4
+          .ec-fact-card
+            h4 Addresses
+            p The blockchain usually stores an address derived from the public key, not the secret key and not a real name.
+
+    .well.ec-panel
+      .ec-section-head
+        div
+          .ec-kicker Stage 1
+          h3.ec-panel-title Geometric Intuition on a Real Curve
+        p.ec-copy
+          | Start with the classic classroom picture. This is not how Bitcoin computes in practice,
+          | but it gives a mental model for the group law.
+      .row
+        .col-md-4
+          form.form-horizontal
+            .form-group
+              label.col-sm-3.control-label Curve
+              .col-sm-9
+                select#ecRealPreset.form-control
+                  option(value='-1|1') y² = x³ - x + 1
+                  option(value='-1|0') y² = x³ - x
+                  option(value='1|1') y² = x³ + x + 1
+            .form-group
+              label.col-sm-3.control-label a
+              .col-sm-9
+                input#ecRealA.form-control(type='range', min='-3', max='3', step='0.5', value='-1')
+                p.help-block
+                  | Current a:
+                  strong#ecRealAValue  -1
+            .form-group
+              label.col-sm-3.control-label b
+              .col-sm-9
+                input#ecRealB.form-control(type='range', min='-3', max='3', step='0.5', value='1')
+                p.help-block
+                  | Current b:
+                  strong#ecRealBValue  1
+            .form-group
+              label.col-sm-3.control-label Operation
+              .col-sm-9
+                label.radio-inline
+                  input(type='radio', name='ecRealMode', value='add', checked)
+                  |  P + Q
+                label.radio-inline
+                  input(type='radio', name='ecRealMode', value='double')
+                  |  2P
+            .form-group
+              label.col-sm-3.control-label P
+              .col-sm-9
+                select#ecPointP.form-control
+            .form-group
+              label.col-sm-3.control-label Q
+              .col-sm-9
+                select#ecPointQ.form-control
+            .form-group
+              .col-sm-offset-3.col-sm-9
+                .ec-formula#ecRealFormula λ = (y₂ - y₁) / (x₂ - x₁)
+            .form-group
+              .col-sm-offset-3.col-sm-9
+                .ec-status#ecRealStatus Choose points on the curve to see the construction.
+        .col-md-8
+          .ec-graph-wrap
+            svg#ecRealSvg.ec-svg(viewBox='0 0 760 460', role='img', aria-label='Elliptic curve point addition diagram')
+          .row.ec-result-grid
+            .col-sm-4
+              .ec-mini-panel
+                span.ec-mini-label Third intersection
+                strong#ecThirdPoint Waiting
+            .col-sm-4
+              .ec-mini-panel
+                span.ec-mini-label Reflected result
+                strong#ecRealSum Waiting
+            .col-sm-4
+              .ec-mini-panel
+                span.ec-mini-label Interpretation
+                strong#ecRealMeaning P + Q
+
+    .well.ec-panel
+      .ec-section-head
+        div
+          .ec-kicker Stage 2
+          h3.ec-panel-title From Geometry to Finite Fields
+        p.ec-copy
+          | In cryptography, the points are not drawn over the real numbers. They live in a finite field
+          code  Fp
+          |  and every operation is done modulo
+          code  p
+          | .
+      .row
+        .col-md-4
+          form.form-horizontal
+            .form-group
+              label.col-sm-3.control-label Preset
+              .col-sm-9
+                select#ecFieldPreset.form-control
+                  option(value='17|2|2') F17 : y² = x³ + 2x + 2
+                  option(value='19|2|3') F19 : y² = x³ + 2x + 3
+                  option(value='23|1|1') F23 : y² = x³ + x + 1
+                  option(value='97|2|3' selected) F97 : y² = x³ + 2x + 3
+            .form-group
+              label.col-sm-3.control-label p
+              .col-sm-9
+                input#ecFieldP.form-control(type='number', min='5', step='1', value='97')
+            .form-group
+              label.col-sm-3.control-label a
+              .col-sm-9
+                input#ecFieldA.form-control(type='number', step='1', value='2')
+            .form-group
+              label.col-sm-3.control-label b
+              .col-sm-9
+                input#ecFieldB.form-control(type='number', step='1', value='3')
+            .form-group
+              label.col-sm-3.control-label P
+              .col-sm-9
+                select#ecFieldPointP.form-control
+            .form-group
+              label.col-sm-3.control-label Q
+              .col-sm-9
+                select#ecFieldPointQ.form-control
+            .form-group
+              .col-sm-offset-3.col-sm-9
+                .ec-formula#ecFieldFormula λ = numerator · denominator⁻¹ mod p
+            .form-group
+              .col-sm-offset-3.col-sm-9
+                .ec-status#ecFieldStatus Pick two points to add them modulo p.
+        .col-md-8
+          .ec-field-stage
+            svg#ecFieldSvg.ec-svg(viewBox='0 0 760 420', role='img', aria-label='Elliptic curve over a finite field')
+          .row.ec-result-grid
+            .col-sm-3
+              .ec-mini-panel
+                span.ec-mini-label Total points
+                strong#ecFieldCount 0
+            .col-sm-3
+              .ec-mini-panel
+                span.ec-mini-label P + Q
+                strong#ecFieldSum Waiting
+            .col-sm-3
+              .ec-mini-panel
+                span.ec-mini-label Order of P
+                strong#ecFieldOrder Waiting
+            .col-sm-3
+              .ec-mini-panel
+                span.ec-mini-label Sample multiples
+                strong#ecFieldCycle Waiting
+          .ec-table-wrap
+            table.table.table-bordered.table-striped.ec-table
+              thead
+                tr
+                  th k
+                  th kP
+              tbody#ecMultipleRows
+
+    .well.ec-panel
+      .ec-section-head
+        div
+          .ec-kicker Stage 3
+          h3.ec-panel-title Blockchain Bridge: secp256k1
+        p.ec-copy
+          | Bitcoin and this demo use the standard curve
+          code  secp256k1
+          | . The field is huge, so we do not draw every point. We keep the same algebraic idea:
+          code  PublicKey = PrivateKey × G
+          | .
+      .row
+        .col-md-6
+          form.form-horizontal
+            .form-group
+              label.col-sm-3.control-label Private key
+              .col-sm-9
+                input#ecSecpPrivate.form-control(type='text', value='12345', autocomplete='off', spellcheck='false')
+                span.help-block Enter a decimal private key to derive the public key used in the rest of the demo.
+            .form-group
+              label.col-sm-3.control-label Curve
+              .col-sm-9
+                input.form-control(type='text', value='secp256k1', disabled)
+            .form-group
+              label.col-sm-3.control-label Generator
+              .col-sm-9
+                input#ecGeneratorSummary.form-control.ec-code(type='text', disabled)
+            .form-group
+              label.col-sm-3.control-label Public key
+              .col-sm-9
+                textarea#ecSecpPublic.form-control.ec-code(rows='3', disabled)
+            .form-group
+              label.col-sm-3.control-label X coordinate
+              .col-sm-9
+                input#ecSecpX.form-control.ec-code(type='text', disabled)
+            .form-group
+              .col-sm-offset-3.col-sm-9
+                .ec-status#ecSecpStatus The public key is obtained by repeated point addition on secp256k1.
+        .col-md-6
+          .ec-bridge-grid
+            .ec-fact-card
+              h4 Same idea as the small lab
+              p The scalar multiplies one point again and again until we reach a new point on the same curve.
+            .ec-fact-card
+              h4 Why the reverse is hard
+              p Given the public point, recovering the private scalar is the elliptic-curve discrete logarithm problem.
+            .ec-fact-card
+              h4 Where to go next
+              p
+                | Continue to
+                a(href='/keys')  Key Pairs
+                | ,
+                a(href='/signatures')  Signatures
+                |  and
+                a(href='/transaction')  Transaction
+                |  to see this math become blockchain operations.
+
+    .well.ec-panel
+      .ec-section-head
+        div
+          .ec-kicker Stage 4
+          h3.ec-panel-title Mini ECDH Demo with Web Crypto
+        p.ec-copy
+          | Here the project uses a more modern browser API:
+          code  crypto.subtle
+          | . The exchange runs on
+          code  P-256
+          |  to demonstrate native-browser elliptic-curve key agreement.
+      .row
+        .col-md-5
+          .ec-fact-card.ec-stack-card
+            h4 Alice public key
+            p Alice creates an ephemeral ECDH key pair and shares only the public key.
+            textarea#ecdhAlicePublic.form-control.ec-code(rows='4', disabled)
+          .ec-fact-card.ec-stack-card
+            h4 Bob public key
+            p Bob does the same. Neither side reveals the private scalar.
+            textarea#ecdhBobPublic.form-control.ec-code(rows='4', disabled)
+          .ec-actions
+            button#ecdhGenerateButton.btn.btn-primary(type='button') Generate New Exchange
+            button#ecdhExplainButton.btn.btn-default(type='button') Compare with secp256k1 Lab
+        .col-md-7
+          .ec-check-grid
+            .ec-mini-panel
+              span.ec-mini-label Curve
+              strong#ecdhCurveLabel P-256
+            .ec-mini-panel
+              span.ec-mini-label Alice derives
+              strong#ecdhAliceSecret Waiting
+            .ec-mini-panel
+              span.ec-mini-label Bob derives
+              strong#ecdhBobSecret Waiting
+          .ec-status#ecdhStatus Click the button to generate two ephemeral keys and derive the same shared secret on both sides.
+          .ec-visual-note
+            strong Why there is no full real curve plot here
+            p
+              | With real production curves such as
+              code  secp256k1
+              |  or
+              code  P-256
+              | , the field is so large that we cannot draw all points as a classroom scatter plot.
+            p
+              | The realistic approach is: use small toy fields to visualize the algebra, then use real keys for the actual cryptographic operations.
+          .well.well-sm.sig-step-box.ec-inline-tip
+            strong How ECDH works:
+            ol
+              li Alice publishes A = aG.
+              li Bob publishes B = bG.
+              li Alice computes aB and Bob computes bA.
+              li Both sides reach the same shared secret without transmitting that secret.
+
+    .well.ec-panel
+      h3.ec-panel-title Suggested Teaching Sequence
+      ul.ec-list
+        li Use the real curve first so students can narrate what “adding points” means.
+        li Move to the finite field and stress that the geometry disappears but the group law remains.
+        li Show that scalar multiplication is just repeated addition of one base point.
+        li Close with secp256k1 so the class sees that wallet keys and signatures come from the same structure.
+
+  script.
+    var EC = elliptic.elliptic().ec;
+    var secp = new EC('secp256k1');
+    var ecdhCurveName = 'P-256';
+
+    function ecRound(value, digits) {
+      var factor = Math.pow(10, digits || 4);
+      return Math.round(value * factor) / factor;
+    }
+
+    function ecFormatNumber(value, digits) {
+      if (!isFinite(value)) return 'undefined';
+      return ecRound(value, digits || 4).toFixed(digits || 4).replace(/\.?0+$/, function(match) {
+        return match === '.0000' ? '' : match;
+      });
+    }
+
+    function ecRealCurve(a, b, x) {
+      return x * x * x + a * x + b;
+    }
+
+    function ecDiscriminant(a, b) {
+      return 4 * Math.pow(a, 3) + 27 * Math.pow(b, 2);
+    }
+
+    function ecRealSamples(a, b) {
+      var points = [];
+      for (var x = -1.5; x <= 2.9; x += 0.16) {
+        var rhs = ecRealCurve(a, b, x);
+        if (rhs > 0.02) {
+          var y = Math.sqrt(rhs);
+          points.push({ label: '(' + ecRound(x, 2) + ', ' + ecRound(y, 2) + ')', x: ecRound(x, 4), y: ecRound(y, 4) });
+          points.push({ label: '(' + ecRound(x, 2) + ', ' + ecRound(-y, 2) + ')', x: ecRound(x, 4), y: ecRound(-y, 4) });
+        }
+      }
+      return points.slice(0, 28);
+    }
+
+    function ecRealAdd(a, b, p, q, mode) {
+      var same = Math.abs(p.x - q.x) < 1e-8 && Math.abs(p.y - q.y) < 1e-8;
+      if (Math.abs(p.x - q.x) < 1e-8 && Math.abs(p.y + q.y) < 1e-8) {
+        return {
+          valid: false,
+          message: 'The line is vertical, so P + (-P) = O.',
+          meaning: 'Point at infinity'
+        };
+      }
+
+      var slope;
+      var formula;
+      if (same || mode === 'double') {
+        if (Math.abs(2 * p.y) < 1e-8) {
+          return {
+            valid: false,
+            message: 'The tangent is vertical, so 2P = O.',
+            meaning: 'Point at infinity'
+          };
+        }
+        slope = (3 * p.x * p.x + a) / (2 * p.y);
+        formula = 'λ = (3x₁² + a) / (2y₁) = ' + ecRound(slope, 4);
+      } else {
+        slope = (q.y - p.y) / (q.x - p.x);
+        formula = 'λ = (y₂ - y₁) / (x₂ - x₁) = ' + ecRound(slope, 4);
+      }
+
+      var x3 = slope * slope - p.x - q.x;
+      var y3 = slope * (p.x - x3) - p.y;
+      return {
+        valid: true,
+        slope: slope,
+        formula: formula,
+        sum: { x: x3, y: y3 },
+        third: { x: x3, y: -y3 },
+        message: 'Reflect the third intersection across the x-axis to obtain the group sum.',
+        meaning: (same || mode === 'double') ? '2P' : 'P + Q'
+      };
+    }
+
+    function ecSvgPoint(x, y, cls, label) {
+      return '<g class="' + cls + '"><circle cx="' + x + '" cy="' + y + '" r="6"></circle>' +
+        (label ? '<text x="' + (x + 10) + '" y="' + (y - 10) + '">' + label + '</text>' : '') + '</g>';
+    }
+
+    function renderRealLab() {
+      var a = parseFloat($('#ecRealA').val());
+      var b = parseFloat($('#ecRealB').val());
+      $('#ecRealAValue').text(a);
+      $('#ecRealBValue').text(b);
+
+      var discriminant = ecDiscriminant(a, b);
+      if (Math.abs(discriminant) < 0.0001) {
+        $('#ecRealStatus').text('This curve is singular. Choose different a and b values.');
+        $('#ecRealSvg').html('');
+        return;
+      }
+
+      var points = ecRealSamples(a, b);
+      var pSelect = $('#ecPointP');
+      var qSelect = $('#ecPointQ');
+      var currentP = pSelect.val();
+      var currentQ = qSelect.val();
+      pSelect.empty();
+      qSelect.empty();
+      points.forEach(function(point, index) {
+        var value = point.x + '|' + point.y;
+        pSelect.append('<option value="' + value + '">' + point.label + '</option>');
+        qSelect.append('<option value="' + value + '">' + point.label + '</option>');
+        if (!currentP && index === 0) currentP = value;
+        if (!currentQ && index === 4) currentQ = value;
+      });
+      if (points.length) {
+        pSelect.val(currentP || (points[0].x + '|' + points[0].y));
+        qSelect.val(currentQ || (points[Math.min(4, points.length - 1)].x + '|' + points[Math.min(4, points.length - 1)].y));
+      }
+
+      var pParts = String($('#ecPointP').val()).split('|');
+      var qParts = String($('#ecPointQ').val()).split('|');
+      var p = { x: parseFloat(pParts[0]), y: parseFloat(pParts[1]) };
+      var q = { x: parseFloat(qParts[0]), y: parseFloat(qParts[1]) };
+      var mode = $('input[name="ecRealMode"]:checked').val();
+      if (mode === 'double') q = { x: p.x, y: p.y };
+
+      var result = ecRealAdd(a, b, p, q, mode);
+      $('#ecRealMeaning').text(result.meaning || 'Waiting');
+      $('#ecRealStatus').text(result.message);
+      $('#ecRealFormula').text(result.formula || 'Vertical line -> point at infinity');
+
+      var width = 760;
+      var height = 460;
+      var padding = 40;
+      var xMin = -3.2;
+      var xMax = 3.2;
+      var yMin = -4.2;
+      var yMax = 4.2;
+      function sx(x) { return padding + (x - xMin) * (width - 2 * padding) / (xMax - xMin); }
+      function sy(y) { return height - padding - (y - yMin) * (height - 2 * padding) / (yMax - yMin); }
+
+      var top = [];
+      var bottom = [];
+      var drawing = [];
+      for (var x = xMin; x <= xMax; x += 0.02) {
+        var rhs = ecRealCurve(a, b, x);
+        if (rhs >= 0) {
+          var y = Math.sqrt(rhs);
+          top.push((top.length ? 'L' : 'M') + sx(x) + ' ' + sy(y));
+          bottom.push((bottom.length ? 'L' : 'M') + sx(x) + ' ' + sy(-y));
+        } else if (top.length && top[top.length - 1] !== '') {
+          top.push('');
+          bottom.push('');
+        }
+      }
+
+      var topPath = top.join(' ').replace(/\s+/g, ' ');
+      var bottomPath = bottom.join(' ').replace(/\s+/g, ' ');
+      drawing.push('<rect x="0" y="0" width="' + width + '" height="' + height + '" rx="20" class="ec-bg"></rect>');
+      drawing.push('<line x1="' + sx(xMin) + '" y1="' + sy(0) + '" x2="' + sx(xMax) + '" y2="' + sy(0) + '" class="ec-axis"></line>');
+      drawing.push('<line x1="' + sx(0) + '" y1="' + sy(yMin) + '" x2="' + sx(0) + '" y2="' + sy(yMax) + '" class="ec-axis"></line>');
+      drawing.push('<path d="' + topPath + '" class="ec-curve-path"></path>');
+      drawing.push('<path d="' + bottomPath + '" class="ec-curve-path"></path>');
+
+      if (result.valid) {
+        var intercept = p.y - result.slope * p.x;
+        var yLeft = result.slope * xMin + intercept;
+        var yRight = result.slope * xMax + intercept;
+        drawing.push('<line x1="' + sx(xMin) + '" y1="' + sy(yLeft) + '" x2="' + sx(xMax) + '" y2="' + sy(yRight) + '" class="ec-line-path"></line>');
+        drawing.push(ecSvgPoint(sx(result.third.x), sy(result.third.y), 'ec-third', 'third'));
+        drawing.push(ecSvgPoint(sx(result.sum.x), sy(result.sum.y), 'ec-sum', result.meaning));
+        drawing.push('<line x1="' + sx(result.third.x) + '" y1="' + sy(result.third.y) + '" x2="' + sx(result.sum.x) + '" y2="' + sy(result.sum.y) + '" class="ec-reflect-path"></line>');
+        $('#ecThirdPoint').text('(' + ecRound(result.third.x, 3) + ', ' + ecRound(result.third.y, 3) + ')');
+        $('#ecRealSum').text('(' + ecRound(result.sum.x, 3) + ', ' + ecRound(result.sum.y, 3) + ')');
+      } else {
+        drawing.push('<line x1="' + sx(p.x) + '" y1="' + sy(yMin) + '" x2="' + sx(p.x) + '" y2="' + sy(yMax) + '" class="ec-line-path"></line>');
+        $('#ecThirdPoint').text('Point at infinity');
+        $('#ecRealSum').text('O');
+      }
+
+      drawing.push(ecSvgPoint(sx(p.x), sy(p.y), 'ec-p', 'P'));
+      drawing.push(ecSvgPoint(sx(q.x), sy(q.y), 'ec-q', mode === 'double' ? 'P' : 'Q'));
+      $('#ecRealSvg').html(drawing.join(''));
+    }
+
+    function ecMod(value, modulus) {
+      return ((value % modulus) + modulus) % modulus;
+    }
+
+    function ecExtendedGcd(a, b) {
+      if (b === 0) return { g: a, x: 1, y: 0 };
+      var next = ecExtendedGcd(b, a % b);
+      return { g: next.g, x: next.y, y: next.x - Math.floor(a / b) * next.y };
+    }
+
+    function ecInverse(value, modulus) {
+      var normalized = ecMod(value, modulus);
+      var result = ecExtendedGcd(normalized, modulus);
+      if (Math.abs(result.g) !== 1) return null;
+      return ecMod(result.x, modulus);
+    }
+
+    function ecFieldPoints(p, a, b) {
+      var points = [{ infinity: true, label: 'O' }];
+      for (var x = 0; x < p; x++) {
+        var rhs = ecMod(x * x * x + a * x + b, p);
+        for (var y = 0; y < p; y++) {
+          if (ecMod(y * y, p) === rhs) {
+            points.push({ x: x, y: y, infinity: false, label: '(' + x + ', ' + y + ')' });
+          }
+        }
+      }
+      return points;
+    }
+
+    function ecFieldEqual(p1, p2) {
+      return !!p1 && !!p2 && p1.infinity === p2.infinity && p1.x === p2.x && p1.y === p2.y;
+    }
+
+    function ecFieldAdd(curve, p1, p2) {
+      if (p1.infinity) {
+        return { point: p2, trace: 'O + Q = Q' };
+      }
+      if (p2.infinity) {
+        return { point: p1, trace: 'P + O = P' };
+      }
+      if (p1.x === p2.x && ecMod(p1.y + p2.y, curve.p) === 0) {
+        return { point: { infinity: true, label: 'O' }, trace: 'P + (-P) = O' };
+      }
+
+      var numerator;
+      var denominator;
+      var inverse;
+      var slope;
+      if (ecFieldEqual(p1, p2)) {
+        numerator = ecMod(3 * p1.x * p1.x + curve.a, curve.p);
+        denominator = ecMod(2 * p1.y, curve.p);
+      } else {
+        numerator = ecMod(p2.y - p1.y, curve.p);
+        denominator = ecMod(p2.x - p1.x, curve.p);
+      }
+
+      inverse = ecInverse(denominator, curve.p);
+      if (inverse === null) {
+        return { point: { infinity: true, label: 'O' }, trace: 'No modular inverse exists for the denominator.' };
+      }
+
+      slope = ecMod(numerator * inverse, curve.p);
+      var x3 = ecMod(slope * slope - p1.x - p2.x, curve.p);
+      var y3 = ecMod(slope * (p1.x - x3) - p1.y, curve.p);
+      return {
+        point: { x: x3, y: y3, infinity: false, label: '(' + x3 + ', ' + y3 + ')' },
+        trace: 'λ = ' + numerator + ' · (' + denominator + ')⁻¹ mod ' + curve.p + ' = ' + numerator + ' · ' + inverse + ' mod ' + curve.p + ' = ' + slope,
+        slope: slope
+      };
+    }
+
+    function ecFieldOrder(curve, point) {
+      if (point.infinity) return 1;
+      var current = point;
+      for (var k = 1; k <= curve.p * curve.p + 2; k++) {
+        if (current.infinity) return k;
+        current = ecFieldAdd(curve, current, point).point;
+      }
+      return '?';
+    }
+
+    function renderFieldLab() {
+      var p = parseInt($('#ecFieldP').val(), 10);
+      var a = parseInt($('#ecFieldA').val(), 10);
+      var b = parseInt($('#ecFieldB').val(), 10);
+      if (!p || p < 5) {
+        $('#ecFieldStatus').text('Choose a prime p greater than 4.');
+        return;
+      }
+
+      var discriminant = ecMod(4 * Math.pow(a, 3) + 27 * Math.pow(b, 2), p);
+      if (discriminant === 0) {
+        $('#ecFieldStatus').text('This finite-field curve is singular. Change p, a or b.');
+        $('#ecFieldSvg').html('');
+        return;
+      }
+
+      var points = ecFieldPoints(p, a, b);
+      var finitePoints = points.filter(function(point) { return !point.infinity; });
+      var pSelect = $('#ecFieldPointP');
+      var qSelect = $('#ecFieldPointQ');
+      var currentP = pSelect.val();
+      var currentQ = qSelect.val();
+      pSelect.empty();
+      qSelect.empty();
+      finitePoints.forEach(function(point, index) {
+        var value = point.x + '|' + point.y;
+        pSelect.append('<option value="' + value + '">' + point.label + '</option>');
+        qSelect.append('<option value="' + value + '">' + point.label + '</option>');
+        if (!currentP && index === 0) currentP = value;
+        if (!currentQ && index === 1) currentQ = value;
+      });
+      if (!finitePoints.length) {
+        $('#ecFieldStatus').text('No affine points were found on this curve.');
+        $('#ecFieldSvg').html('');
+        return;
+      }
+      pSelect.val(currentP || (finitePoints[0].x + '|' + finitePoints[0].y));
+      qSelect.val(currentQ || (finitePoints[Math.min(1, finitePoints.length - 1)].x + '|' + finitePoints[Math.min(1, finitePoints.length - 1)].y));
+
+      var pParts = String($('#ecFieldPointP').val()).split('|');
+      var qParts = String($('#ecFieldPointQ').val()).split('|');
+      var pointP = { x: parseInt(pParts[0], 10), y: parseInt(pParts[1], 10), infinity: false, label: '(' + pParts[0] + ', ' + pParts[1] + ')' };
+      var pointQ = { x: parseInt(qParts[0], 10), y: parseInt(qParts[1], 10), infinity: false, label: '(' + qParts[0] + ', ' + qParts[1] + ')' };
+      var curve = { p: p, a: ecMod(a, p), b: ecMod(b, p) };
+      var addResult = ecFieldAdd(curve, pointP, pointQ);
+      var order = ecFieldOrder(curve, pointP);
+
+      $('#ecFieldFormula').text(addResult.trace);
+      $('#ecFieldStatus').text('Every operation is done modulo ' + p + '. The result is another point on the same curve.');
+      $('#ecFieldCount').text(points.length);
+      $('#ecFieldSum').text(addResult.point.infinity ? 'O' : addResult.point.label);
+      $('#ecFieldOrder').text(order);
+
+      var rows = [];
+      var current = { infinity: true, label: 'O' };
+      for (var k = 1; k <= Math.min(order === '?' ? 12 : order, 12); k++) {
+        current = ecFieldAdd(curve, current, pointP).point;
+        rows.push('<tr><td>' + k + '</td><td>' + (current.infinity ? 'O' : current.label) + '</td></tr>');
+        if (current.infinity) break;
+      }
+      $('#ecMultipleRows').html(rows.join(''));
+      $('#ecFieldCycle').text(rows.length + ' rows');
+
+      var width = 760;
+      var height = 420;
+      var padding = 34;
+      var usable = width - padding * 2;
+      var cell = usable / Math.max(p - 1, 1);
+      var svg = [];
+      svg.push('<rect x="0" y="0" width="' + width + '" height="' + height + '" rx="20" class="ec-bg"></rect>');
+      for (var gx = 0; gx < p; gx++) {
+        var xCoord = padding + gx * cell;
+        svg.push('<line x1="' + xCoord + '" y1="' + padding + '" x2="' + xCoord + '" y2="' + (height - padding) + '" class="ec-grid-line"></line>');
+        svg.push('<text x="' + xCoord + '" y="' + (height - 8) + '" class="ec-grid-label">' + gx + '</text>');
+      }
+      for (var gy = 0; gy < p; gy++) {
+        var yCoord = height - padding - gy * cell;
+        svg.push('<line x1="' + padding + '" y1="' + yCoord + '" x2="' + (width - padding) + '" y2="' + yCoord + '" class="ec-grid-line"></line>');
+        svg.push('<text x="10" y="' + (yCoord + 4) + '" class="ec-grid-label">' + gy + '</text>');
+      }
+
+      finitePoints.forEach(function(point) {
+        var cls = 'ec-field-point';
+        var label = '';
+        if (ecFieldEqual(point, pointP)) { cls += ' ec-p'; label = 'P'; }
+        if (ecFieldEqual(point, pointQ)) { cls += ' ec-q'; label = label ? label + '/Q' : 'Q'; }
+        if (!addResult.point.infinity && ecFieldEqual(point, addResult.point)) { cls += ' ec-sum'; label = label ? label + '/R' : 'R'; }
+        var cx = padding + point.x * cell;
+        var cy = height - padding - point.y * cell;
+        svg.push('<g class="' + cls + '"><circle cx="' + cx + '" cy="' + cy + '" r="7"></circle>' +
+          (label ? '<text x="' + (cx + 9) + '" y="' + (cy - 8) + '">' + label + '</text>' : '') + '</g>');
+      });
+
+      $('#ecFieldSvg').html(svg.join(''));
+    }
+
+    function renderSecpBridge() {
+      var input = $('#ecSecpPrivate').val().replace(/\D/g, '');
+      $('#ecSecpPrivate').val(input);
+      if (!input) {
+        $('#ecSecpStatus').text('Enter a positive decimal private key.');
+        $('#ecSecpPublic').val('');
+        $('#ecSecpX').val('');
+        return;
+      }
+
+      try {
+        var key = secp.keyFromPrivate(bigInt(input).toString(16));
+        var pub = key.getPublic();
+        $('#ecGeneratorSummary').val('G = standard secp256k1 generator point');
+        $('#ecSecpPublic').val(pub.encode('hex'));
+        $('#ecSecpX').val(pub.getX().toString(16));
+        Cookies.set('privateKey', key.getPrivate('hex'));
+        Cookies.set('publicKey', pub.encode('hex'));
+        $('#ecSecpStatus').text('Computed public key = private key × G on secp256k1. The same key pair is now available to the other crypto labs.');
+      } catch (err) {
+        $('#ecSecpStatus').text('That value is not a valid private key.');
+        $('#ecSecpPublic').val('');
+        $('#ecSecpX').val('');
+      }
+    }
+
+    function bytesToHex(bytes) {
+      return Array.prototype.map.call(bytes, function(byte) {
+        return byte.toString(16).padStart(2, '0');
+      }).join('');
+    }
+
+    function shortHex(hex) {
+      if (!hex) return 'Waiting';
+      if (hex.length <= 28) return hex;
+      return hex.substring(0, 18) + '...' + hex.substring(hex.length - 10);
+    }
+
+    async function ecExportPublicKeyHex(key) {
+      var raw = await window.crypto.subtle.exportKey('raw', key);
+      return bytesToHex(new Uint8Array(raw));
+    }
+
+    async function ecDeriveSecret(privateKey, publicKey) {
+      var bits = await window.crypto.subtle.deriveBits(
+        { name: 'ECDH', public: publicKey },
+        privateKey,
+        256
+      );
+      return bytesToHex(new Uint8Array(bits));
+    }
+
+    async function renderEcdhDemo() {
+      if (!window.crypto || !window.crypto.subtle) {
+        $('#ecdhStatus').text('This browser does not expose Web Crypto, so the native ECDH demo cannot run here.');
+        return;
+      }
+
+      try {
+        $('#ecdhCurveLabel').text(ecdhCurveName + ' via Web Crypto');
+        $('#ecdhStatus').text('Generating Alice and Bob key pairs with the browser Web Crypto API...');
+
+        var alice = await window.crypto.subtle.generateKey(
+          { name: 'ECDH', namedCurve: ecdhCurveName },
+          true,
+          ['deriveBits']
+        );
+        var bob = await window.crypto.subtle.generateKey(
+          { name: 'ECDH', namedCurve: ecdhCurveName },
+          true,
+          ['deriveBits']
+        );
+
+        var alicePublic = await ecExportPublicKeyHex(alice.publicKey);
+        var bobPublic = await ecExportPublicKeyHex(bob.publicKey);
+        var aliceSecret = await ecDeriveSecret(alice.privateKey, bob.publicKey);
+        var bobSecret = await ecDeriveSecret(bob.privateKey, alice.publicKey);
+
+        $('#ecdhAlicePublic').val(alicePublic);
+        $('#ecdhBobPublic').val(bobPublic);
+        $('#ecdhAliceSecret').text(shortHex(aliceSecret));
+        $('#ecdhBobSecret').text(shortHex(bobSecret));
+
+        if (aliceSecret === bobSecret) {
+          $('#ecdhStatus').text('Alice and Bob derived the same shared secret. In real protocols, that value normally feeds a KDF before becoming a session key.');
+        } else {
+          $('#ecdhStatus').text('The two derived secrets do not match, so the exchange failed.');
+        }
+      } catch (err) {
+        $('#ecdhStatus').text('Web Crypto could not complete the ECDH exchange: ' + err.message);
+      }
+    }
+
+    $(function() {
+      $('#ecRealPreset').on('change', function() {
+        var parts = $(this).val().split('|');
+        $('#ecRealA').val(parts[0]);
+        $('#ecRealB').val(parts[1]);
+        renderRealLab();
+      });
+
+      $('#ecFieldPreset').on('change', function() {
+        var parts = $(this).val().split('|');
+        $('#ecFieldP').val(parts[0]);
+        $('#ecFieldA').val(parts[1]);
+        $('#ecFieldB').val(parts[2]);
+        renderFieldLab();
+      });
+
+      $('#ecRealA, #ecRealB').on('input change', renderRealLab);
+      $('#ecPointP, #ecPointQ, input[name="ecRealMode"]').on('change', renderRealLab);
+      $('#ecFieldP, #ecFieldA, #ecFieldB').on('input change', renderFieldLab);
+      $('#ecFieldPointP, #ecFieldPointQ').on('change', renderFieldLab);
+      $('#ecSecpPrivate').on('input', renderSecpBridge);
+      $('#ecdhGenerateButton').on('click', function() {
+        renderEcdhDemo();
+      });
+      $('#ecdhExplainButton').on('click', function() {
+        $('#ecdhStatus').text('This section uses modern Web Crypto on P-256 for native-browser ECDH. The blockchain labs below still use secp256k1 because that is the curve family already used by the project for keys and signatures.');
+      });
+
+      if (Cookies.get('privateKey')) {
+        try {
+          var restored = secp.keyFromPrivate(Cookies.get('privateKey'), 'hex');
+          $('#ecSecpPrivate').val(bigInt(restored.getPrivate('hex'), 16).toString());
+        } catch (err) {}
+      }
+
+      renderRealLab();
+      renderFieldLab();
+      renderSecpBridge();
+      renderEcdhDemo();
+    });

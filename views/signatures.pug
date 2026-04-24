@@ -4,8 +4,13 @@ block content
   .container
     h1 Digital Signatures
     p.text-muted
-      | A digital signature proves that a message was created by the holder of a specific private key —
+      | A digital signature proves that a message was created by the holder of a specific private key -
       | without revealing the key itself. Anyone with the public key can verify it.
+      | The curve intuition lives in
+      a(href='/elliptic')  Elliptic Curves
+      |  and the reusable key pair comes from
+      a(href='/keys')  Key Pairs
+      | .
 
     ul.nav.nav-tabs#sigTabs(role='tablist')
       li.active(role='presentation')
@@ -19,7 +24,7 @@ block content
 
     .tab-content.sig-tab-content
 
-      //- ── SIGN TAB ───────────────────────────────────────────────────────────
+      //- â”€â”€ SIGN TAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       #tab-sign.tab-pane.active(role='tabpanel')
         .well#signWell
           form.form-horizontal
@@ -27,14 +32,14 @@ block content
             .form-group
               label.col-sm-2.control-label Message
               .col-sm-10
-                textarea#signMessage.form-control(rows='4', placeholder='Type any message to sign…', spellcheck='false')
+                textarea#signMessage.form-control(rows='4', placeholder='Type any message to sign...', spellcheck='false')
 
             .form-group
               label.col-sm-2.control-label Private Key
               .col-sm-10
                 input#signPrivateKey.form-control(
                   type='text',
-                  placeholder='decimal private key — go to Key Pairs page to generate one',
+                  placeholder='decimal private key - go to Key Pairs page to generate one',
                   autocomplete='off',
                   spellcheck='false'
                 )
@@ -43,7 +48,7 @@ block content
               .col-sm-offset-2.col-sm-10
                 .sig-process-hint
                   code SHA-256(message)
-                  |  → sign hash with private key → DER-encoded signature
+                  |  -> sign hash with private key -> DER-encoded signature
 
             .form-group
               .col-sm-offset-2.col-sm-10
@@ -57,7 +62,7 @@ block content
                 textarea#signatureOutput.form-control.sig-output(
                   rows='3',
                   disabled,
-                  placeholder='signature will appear here after signing…',
+                  placeholder='signature will appear here after signing...',
                   spellcheck='false'
                 )
 
@@ -74,9 +79,13 @@ block content
               code h = SHA256(message)
             li Sign the hash with your private key:
               code sig = ECDSA_sign(h, privateKey)
-            li The signature proves you held the private key — without revealing it
+            li The signature proves you held the private key - without revealing it
+          p.text-muted
+            | Compare this with the ECDH section in
+            a(href='/elliptic')  Elliptic Curves
+            | : same family of math, but there the goal is to derive a shared secret instead of signing a message.
 
-      //- ── VERIFY TAB ─────────────────────────────────────────────────────────
+      //- â”€â”€ VERIFY TAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       #tab-verify.tab-pane(role='tabpanel')
         .well#verifyWell
           form.form-horizontal
@@ -84,7 +93,7 @@ block content
             .form-group
               label.col-sm-2.control-label Message
               .col-sm-10
-                textarea#verifyMessage.form-control(rows='4', placeholder='Original message…', spellcheck='false')
+                textarea#verifyMessage.form-control(rows='4', placeholder='Original message...', spellcheck='false')
 
             .form-group
               label.col-sm-2.control-label Public Key
@@ -99,7 +108,7 @@ block content
             .form-group
               label.col-sm-2.control-label Signature
               .col-sm-10
-                textarea#verifySignature.form-control(rows='3', placeholder='hex-encoded DER signature…', spellcheck='false')
+                textarea#verifySignature.form-control(rows='3', placeholder='hex-encoded DER signature...', spellcheck='false')
 
             .form-group
               .col-sm-offset-2.col-sm-10
@@ -118,7 +127,7 @@ block content
               strong Result:
               | only the holder of the matching private key could have produced this signature.
             li
-              em Try changing one character in the Message — the verification will fail immediately.
+              em Try changing one character in the Message - the verification will fail immediately.
 
   script.
     var EC = elliptic.elliptic().ec;
@@ -173,7 +182,7 @@ block content
 
       $('#verifyPublicKey, #verifySignature').on('input', resetVerifyState);
 
-      // ── Sign ──────────────────────────────────────────────────────────────
+      // â”€â”€ Sign â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       $('#signButton').on('click', function() {
         var message = $('#signMessage').val();
         if (!message) { alert('Please enter a message to sign.'); return; }
@@ -195,12 +204,12 @@ block content
         }
       });
 
-      // ── Copy to Verify tab ────────────────────────────────────────────────
+      // â”€â”€ Copy to Verify tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       $('#copyToVerify').on('click', function() {
         $('a[href="#tab-verify"]').tab('show');
       });
 
-      // ── Verify ────────────────────────────────────────────────────────────
+      // â”€â”€ Verify â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       $('#verifyButton').on('click', function() {
         var message   = $('#verifyMessage').val();
         var pubKeyHex = $('#verifyPublicKey').val().trim();

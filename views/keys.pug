@@ -9,7 +9,10 @@ block content
       strong private key
       |  is your secret. The
       strong public key
-      |  is your identity — your address on the network.
+      |  is your identity - your address on the network.
+      | If you want the intuition behind this one-way step, visit
+      a(href='/elliptic')  Elliptic Curves
+      |  first.
 
     .well.keys-panel
       form.form-horizontal
@@ -25,7 +28,7 @@ block content
           .col-sm-10
             input#privateKey.form-control(
               type='text',
-              placeholder='Enter a decimal number, or click Generate…',
+              placeholder='Enter a decimal number, or click Generate...',
               autocomplete='off',
               spellcheck='false'
             )
@@ -33,18 +36,18 @@ block content
         .form-group
           label.col-sm-2.control-label (hex)
           .col-sm-10
-            input#privateKeyHex.form-control(type='text', disabled, placeholder='hex representation…')
+            input#privateKeyHex.form-control(type='text', disabled, placeholder='hex representation...')
 
         .form-group
           .col-sm-offset-2.col-sm-10
             .key-derivation-arrow
-              span.key-derivation-label secp256k1: Public Key = Private Key × G (one-way)
+              span.key-derivation-label secp256k1: Public Key = Private Key x G (see Elliptic Curves)
               .key-derivation-line
 
         .form-group
           label.col-sm-2.control-label Public Key
           .col-sm-10
-            input#publicKey.form-control(type='text', disabled, placeholder='derived from private key…')
+            input#publicKey.form-control(type='text', disabled, placeholder='derived from private key...')
 
     .row.keys-explainer
       .col-sm-4
@@ -53,16 +56,16 @@ block content
             span.glyphicon.glyphicon-lock
             |  Private Key
           p
-            | A random 256-bit number (1 to 2²⁵⁶).
+            | A random 256-bit number (1 to 2^256).
             | Keep it
             strong secret
             | . Anyone who has it can spend your funds.
           p.text-muted Example:
             code 12345
-            |  → a valid private key.
+            |  -> a valid private key.
       .col-sm-4
         .well.well-sm.key-info-box.key-info-center
-          h4.text-center ↓
+          h4.text-center v
           p.text-center
             | Elliptic curve multiplication by generator point
             code G
@@ -72,14 +75,14 @@ block content
             |  curve.
             br
             | Same curve used by Bitcoin and Ethereum.
-          p.text-center.text-muted Fast to compute → but impossible to reverse.
+          p.text-center.text-muted Fast to compute -> but impossible to reverse.
       .col-sm-4
         .well.well-sm.key-info-box
           h4
             span.glyphicon.glyphicon-eye-open
             |  Public Key
           p
-            | Derived from the private key — shared publicly.
+            | Derived from the private key - shared publicly.
             | It is your
             strong address
             |  on the blockchain.
@@ -92,12 +95,27 @@ block content
     .well.well-sm.keys-tip
       span.glyphicon.glyphicon-info-sign
       |
+      strong  New:
+      |  start in
+      a(href='/elliptic')  Elliptic Curves
+      |  if you want the geometric intuition behind
+      code  private key x G
+      | .
+      br
+      span.glyphicon.glyphicon-link
+      |
       strong  Keys persist across pages.
       |  Generate a key pair here, then go to
       a(href='/signatures')  Signatures
       |  to sign a message, or to
       a(href='/transaction')  Transaction
       |  to sign a payment. Your keys are saved in the browser.
+      br
+      span.glyphicon.glyphicon-transfer
+      |
+      |  The
+      a(href='/elliptic')  Elliptic Curves
+      |  page now also includes a native-browser ECDH example and keeps the same saved key flow for these crypto labs.
 
   script.
     var EC = elliptic.elliptic().ec;
